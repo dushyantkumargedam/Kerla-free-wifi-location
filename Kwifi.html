@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-R">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kerala Wi-Fi Project Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 0.75rem;
+            background-color: #ffffff;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .chart-container-bar-tall {
+            height: 500px;
+            max-height: 600px;
+        }
+        .chart-container-bar-med {
+            height: 450px;
+            max-height: 500px;
+        }
+        .chart-container-donut {
+            height: 350px;
+            max-height: 400px;
+        }
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .tab-active {
+            color: #047857; 
+            border-bottom-color: #047857;
+        }
+        .tab-inactive {
+            color: #57534e;
+        }
+        .tab-inactive:hover {
+            color: #1c1917;
+            background-color: #f5f5f4;
+        }
+        .stat-card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="bg-amber-50 text-stone-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-10">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center">
+            <h1 class="text-2xl md:text-3xl font-bold text-emerald-700">Kerala Free Wi-Fi Project Dashboard</h1>
+            <span class="text-sm text-stone-500 mt-2 sm:mt-0">Total Hotspots: 2,023</span>
+        </div>
+        <nav class="flex flex-wrap justify-center bg-white border-b-2 border-stone-100">
+            <button id="btn-overview" class="tab-button tab-active" onclick="showTab('overview')">Overview</button>
+            <button id="btn-district" class="tab-button tab-inactive" onclick="showTab('district')">By District</button>
+            <button id="btn-category" class="tab-button tab-inactive" onclick="showTab('category')">By Category</button>
+            <button id="btn-phase" class="tab-button tab-inactive" onclick="showTab('phase')">Phase Analysis</button>
+            <button id="btn-recs" class="tab-button tab-inactive" onclick="showTab('recs')">Recommendations</button>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+
+        <section id="tab-overview" class="space-y-8">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold text-stone-900 mb-2">Project Overview</h2>
+                <p class="text-lg text-stone-600 max-w-3xl mx-auto">
+                    A high-level summary of the Kerala Free Wi-Fi Hotspot project, including key metrics, rollout progress, and the executive summary from the analysis.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="stat-card text-center">
+                    <h3 class="text-lg font-semibold text-stone-500">Total Hotspots</h3>
+                    <p class="text-5xl font-bold text-emerald-700 my-2">2,023</p>
+                    <p class="text-sm text-stone-500">Across 14 Districts</p>
+                </div>
+                <div class="stat-card text-center">
+                    <h3 class="text-lg font-semibold text-stone-500">Phase-1 Rollout</h3>
+                    <p class="text-5xl font-bold text-emerald-700 my-2">1,000</p>
+                    <p class="text-sm text-stone-500">49.4% of Total</p>
+                </div>
+                <div class="stat-card text-center">
+                    <h3 class="text-lg font-semibold text-stone-500">Phase-2 Rollout</h3>
+                    <p class="text-5xl font-bold text-emerald-700 my-2">1,023</p>
+                    <p class="text-sm text-stone-500">50.6% of Total</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
+                <div class="lg:col-span-2">
+                    <div class="chart-container chart-container-donut">
+                        <canvas id="phaseDonutChart"></canvas>
+                    </div>
+                </div>
+                <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-bold text-stone-900 mb-4">Executive Summary</h3>
+                    <p class="text-base text-stone-700 leading-relaxed">
+                        This analysis reveals a near-equal split in implementation between Phase-1 (49.4%) and Phase-2 (50.6%). Geographically, Ernakulam and Thiruvananthapuram lead in coverage. Strategically, the highest priority was given to <strong>Panchayat offices</strong>, which accounted for 29.3% of all hotspots and received the strongest emphasis during Phase-1. This suggests a clear focus on local governance and rural connectivity in the initial stages of the project.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-district" class="hidden space-y-8">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold text-stone-900 mb-2">Geographical Distribution by District</h2>
+                <p class="text-lg text-stone-600 max-w-3xl mx-auto">
+                    This chart illustrates the spread of Wi-Fi hotspots across all 14 districts of Kerala, highlighting which regions have the highest and lowest coverage.
+                </p>
+            </div>
+            
+            <div class="chart-container chart-container-bar-tall">
+                <canvas id="districtBarChart"></canvas>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-2xl font-bold text-stone-900 mb-4">Key Findings</h3>
+                <ul class="list-disc list-inside space-y-2 text-stone-700">
+                    <li><strong>Top Coverage:</strong> <strong>Ernakulam</strong> has the highest number of hotspots (231, 11.4%), followed by the state capital, <strong>Thiruvananthapuram</strong> (198, 9.8%). This concentration suggests higher demand or greater urbanization in these central districts.</li>
+                    <li><strong>Lowest Coverage:</strong> <strong>Wayanad</strong> (90, 4.4%) and <strong>Idukki</strong> (80, 4.0%) have the lowest counts, indicating potential challenges in deployment due to geographical terrain or lower population density in these regions.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="tab-category" class="hidden space-y-8">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold text-stone-900 mb-2">Distribution by Location Category</h2>
+                <p class="text-lg text-stone-600 max-w-3xl mx-auto">
+                    This analysis identifies the types of public locations prioritized for Wi-Fi access, showing the Top 10 categories.
+                </p>
+            </div>
+
+            <div class="chart-container chart-container-bar-med">
+                <canvas id="categoryBarChart"></canvas>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-2xl font-bold text-stone-900 mb-4">Key Findings</h3>
+                <ul class="list-disc list-inside space-y-2 text-stone-700">
+                    <li><strong>Primary Focus:</strong> <strong>Panchayat offices</strong> overwhelmingly dominate the rollout, representing nearly one-third (592, 29.3%) of all hotspots. This highlights the project's foundational commitment to empowering local administration and rural citizens.</li>
+                    <li><strong>Health and Civic Services:</strong> <strong>Hospitals</strong> (202, 10.0%) and general <strong>Govt Offices</strong> (155, 7.7%) are the next highest priority areas, confirming a focus on public health and essential government services.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="tab-phase" class="hidden space-y-8">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold text-stone-900 mb-2">Strategic Phase Analysis</h2>
+                <p class="text-lg text-stone-600 max-w-3xl mx-auto">
+                    This chart reveals the strategic rollout timeline by comparing Phase-1 and Phase-2 implementation within the top 10 location categories.
+                </p>
+            </div>
+
+            <div class="chart-container chart-container-bar-med">
+                <canvas id="phaseStackedBarChart"></canvas>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-2xl font-bold text-stone-900 mb-4">Key Findings</h3>
+                <ul class="list-disc list-inside space-y-2 text-stone-700">
+                    <li><strong>Phase-1 Priority (Initial Focus):</strong> <strong>Panchayat offices</strong> were the undisputed core focus of Phase-1, with 416 hotspots (70% of their total) completed. <strong>Bus Stands</strong> and <strong>Block Offices</strong> also saw a majority of their deployments in this first stage.</li>
+                    <li><strong>Phase-2 Priority (Expansion Focus):</strong> Phase-2 saw a strategic shift towards broader public utility. <strong>Hospitals</strong> (131 in P2), <strong>Village Offices</strong> (115 in P2), and <strong>Tourist Places</strong> (61 in P2) were all significantly prioritized in the second phase.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="tab-recs" class="hidden space-y-8">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold text-stone-900 mb-2">Conclusion & Recommendations</h2>
+                <p class="text-lg text-stone-600 max-w-3xl mx-auto">
+                    A summary of the project's success in facilitating e-governance and public access, along with actionable recommendations for future action.
+                </p>
+            </div>
+
+            <div class="bg-white p-8 rounded-xl shadow-lg">
+                <h3 class="text-2xl font-bold text-stone-900 mb-4">Conclusion</h3>
+                <p class="text-base text-stone-700 leading-relaxed">
+                    The Kerala Free Wi-Fi Hotspot project has achieved a substantial and strategically phased rollout, focusing primarily on e-governance and public access. The program successfully executed an initial phase focused on local administrative bodies (Panchayat and Block offices) and pivoted effectively in Phase-2 to expand service into high-impact public locations (Hospitals, Village Offices, Tourist Places). While urban districts show excellent coverage, a connectivity gap remains in geographically challenging regions like Wayanad and Idukki.
+                </p>
+            </div>
+            
+            <h3 class="text-2xl font-bold text-stone-900 text-center">Recommendations for Future Action</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="stat-card">
+                    <h4 class="text-xl font-bold text-emerald-700 mb-2">1. Address Geographic Disparity</h4>
+                    <p class="text-stone-600">Launch a "Phase-3 Rural Uplift" focusing on districts with the lowest coverage: <strong>Wayanad</strong> and <strong>Idukki</strong>. Adapt technology for remote, mountainous terrain to ensure equitable access.</p>
+                </div>
+                <div class="stat-card">
+                    <h4 class="text-xl font-bold text-emerald-700 mb-2">2. Evaluate Utilization Rates</h4>
+                    <p class="text-stone-600">Collect metrics on actual usage (e.g., peak times, data consumption) for top categories like Hospitals and Bus Stands to confirm high citizen adoption and justify future upgrades.</p>
+                </div>
+                <div class="stat-card">
+                    <h4 class="text-xl font-bold text-emerald-700 mb-2">3. Expand Education Access</h4>
+                    <p class="text-stone-600">Given that <strong>Libraries</strong> and <strong>University/College</strong> locations are only 3.3% each, a dedicated push to expand hotspots in these facilities would support digital literacy and learning.</p>
+                </div>
+                <div class="stat-card">
+                    <h4 class="text-xl font-bold text-emerald-700 mb-2">4. Enhance Tourist Connectivity</h4>
+                    <p class="text-stone-600">Continue the Phase-2 priority on <strong>Tourist Places</strong>. Ensure Wi-Fi service is clearly advertised in multiple languages to boost the experience for domestic and international visitors.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const chartInstances = {};
+
+        const allTabs = ['overview', 'district', 'category', 'phase', 'recs'];
+        
+        const allButtons = {
+            'overview': document.getElementById('btn-overview'),
+            'district': document.getElementById('btn-district'),
+            'category': document.getElementById('btn-category'),
+            'phase': document.getElementById('btn-phase'),
+            'recs': document.getElementById('btn-recs')
+        };
+        
+        const allTabViews = {
+            'overview': document.getElementById('tab-overview'),
+            'district': document.getElementById('tab-district'),
+            'category': document.getElementById('tab-category'),
+            'phase': document.getElementById('tab-phase'),
+            'recs': document.getElementById('tab-recs')
+        };
+
+        const districtData = {
+            labels: ["Ernakulam", "Thiruvananthapuram", "Thrissur", "Kannur", "Malappuram", "Kozhikode", "Kollam", "Pathanamthitta", "Kottayam", "Palakkad", "Kasaragod", "Alleppey", "Wayanad", "Idukki"],
+            counts: [231, 198, 167, 161, 150, 148, 144, 136, 136, 130, 130, 122, 90, 80]
+        };
+
+        const categoryData = {
+            labels: ["Panchayat office", "Hospital", "Govt Office", "Village Office", "Bus Stand", "Civi Station/Mini Civil station", "Tourist Place", "Block Office", "University/College", "Library"],
+            counts: [592, 202, 155, 142, 105, 98, 81, 76, 66, 66]
+        };
+
+        const phaseData = {
+            labels: ["Phase-1", "Phase-2"],
+            counts: [1000, 1023]
+        };
+
+        const phaseCategoryData = {
+            labels: ["Panchayat office", "Bus Stand", "Hospital", "Block Office", "Govt Office", "Civi Station/Mini Civil station", "Library", "Village Office", "University/College", "Tourist Place"],
+            phase1: [416, 72, 71, 58, 58, 51, 31, 27, 21, 20],
+            phase2: [176, 33, 131, 18, 97, 47, 35, 115, 45, 61]
+        };
+
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.color = '#374151';
+
+        function showTab(tabId) {
+            allTabs.forEach(id => {
+                const tabView = allTabViews[id];
+                const button = allButtons[id];
+                if (id === tabId) {
+                    tabView.classList.remove('hidden');
+                    button.classList.add('tab-active');
+                    button.classList.remove('tab-inactive');
+                } else {
+                    tabView.classList.add('hidden');
+                    button.classList.remove('tab-active');
+                    button.classList.add('tab-inactive');
+                }
+            });
+            
+            lazyLoadChart(tabId);
+        }
+
+        function lazyLoadChart(tabId) {
+            if (tabId === 'overview' && !chartInstances.phaseDonut) {
+                createPhaseDonutChart();
+            } else if (tabId === 'district' && !chartInstances.districtBar) {
+                createDistrictBarChart();
+            } else if (tabId === 'category' && !chartInstances.categoryBar) {
+                createCategoryBarChart();
+            } else if (tabId === 'phase' && !chartInstances.phaseStackedBar) {
+                createPhaseStackedBarChart();
+            }
+        }
+
+        function createPhaseDonutChart() {
+            const ctx = document.getElementById('phaseDonutChart').getContext('2d');
+            chartInstances.phaseDonut = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: phaseData.labels,
+                    datasets: [{
+                        label: 'Hotspot Count',
+                        data: phaseData.counts,
+                        backgroundColor: [
+                            '#fbbf24', 
+                            '#059669'  
+                        ],
+                        borderColor: '#ffffff',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Hotspot Rollout by Phase',
+                            font: { size: 18, weight: '600' },
+                            padding: { top: 10, bottom: 20 }
+                        },
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 14 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createDistrictBarChart() {
+            const ctx = document.getElementById('districtBarChart').getContext('2d');
+            chartInstances.districtBar = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: districtData.labels,
+                    datasets: [{
+                        label: 'Number of Hotspots',
+                        data: districtData.counts,
+                        backgroundColor: '#059669',
+                        borderColor: '#047857',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Hotspots by District',
+                            font: { size: 18, weight: '600' },
+                            padding: { top: 10, bottom: 20 }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                display: true
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createCategoryBarChart() {
+            const ctx = document.getElementById('categoryBarChart').getContext('2d');
+            chartInstances.categoryBar = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: categoryData.labels,
+                    datasets: [{
+                        label: 'Number of Hotspots',
+                        data: categoryData.counts,
+                        backgroundColor: '#fbbf24',
+                        borderColor: '#f59e0b',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Top 10 Hotspot Categories',
+                            font: { size: 18, weight: '600' },
+                            padding: { top: 10, bottom: 20 }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        },
+                        y: {
+                            ticks: {
+                                autoSkip: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createPhaseStackedBarChart() {
+            const ctx = document.getElementById('phaseStackedBarChart').getContext('2d');
+            chartInstances.phaseStackedBar = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: phaseCategoryData.labels,
+                    datasets: [
+                        {
+                            label: 'Phase-1',
+                            data: phaseCategoryData.phase1,
+                            backgroundColor: '#fbbf24'
+                        },
+                        {
+                            label: 'Phase-2',
+                            data: phaseCategoryData.phase2,
+                            backgroundColor: '#059669'
+                        }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Phase Distribution in Top 10 Categories',
+                            font: { size: 18, weight: '600' },
+                            padding: { top: 10, bottom: 20 }
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            beginAtZero: true
+                        },
+                        y: {
+                            stacked: true,
+                            ticks: {
+                                autoSkip: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            showTab('overview');
+        });
+    </script>
+
+</body>
+</html>
